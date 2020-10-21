@@ -32,12 +32,9 @@ export default class Blackjack {
           'Karen',
           'Tim',
           'Rick',
-          'Jess',
           'Randy',
           'Larry',
           'Buck',
-          'Sandy',
-          'Rachel',
           'Anne'
         ];
 
