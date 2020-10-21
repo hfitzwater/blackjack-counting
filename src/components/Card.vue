@@ -1,25 +1,27 @@
 <template>
   <div class="inline-block">
     <div :class="{ card: true, red: card.suit.color === 'red' }">
-      <div class="top-left">
-        <div>
-          {{ this.card.designator.name }}
+      <template v-if="!card.isHole">
+        <div class="top-left">
+          <div>
+            {{ this.card.designator.name }}
+          </div>
+          <div>
+            {{ this.card.suit.icon }}
+          </div>
         </div>
-        <div>
+        <div class="main-icon">
           {{ this.card.suit.icon }}
         </div>
-      </div>
-      <div class="main-icon">
-        {{ this.card.suit.icon }}
-      </div>
-      <div class="bottom-right">
-        <div>
-          {{ this.card.suit.icon }}
+        <div class="bottom-right">
+          <div>
+            {{ this.card.suit.icon }}
+          </div>
+          <div class="flip">
+            {{ this.card.designator.name }}
+          </div>
         </div>
-        <div class="flip">
-          {{ this.card.designator.name }}
-        </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
@@ -28,7 +30,7 @@
 export default {
   name: "Card",
   props: [
-    'cardDetails'
+    "cardDetails"
   ],
   data() {
     return {
@@ -40,7 +42,8 @@ export default {
 
 <style scoped lang="less">
   .card {
-    margin: 10px;
+    cursor: pointer;
+    margin: 4px;
     font-size: 20px;
     width: 150px;
     height: 200px;
