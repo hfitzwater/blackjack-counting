@@ -39,11 +39,6 @@ export default {
     "isHole",
     "index"
   ],
-  watch: {
-    cardDetails(val) {
-      console.log(val);
-    }
-  },
   data() {
     return {
       Counter,

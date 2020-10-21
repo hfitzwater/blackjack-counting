@@ -6,6 +6,12 @@
       </div>
       <div class="dealer">
         <cv-loading style="position:absolute;" :active="dealerDrawing" overlay></cv-loading>
+        <cv-toast-notification
+          v-if="revealHole && Blackjack.getHandValue(this.dealerCards) >= 21"
+          class="dealer-notif"
+          title="Status"
+          :sub-title="blackjack.state.toUpperCase()">
+        </cv-toast-notification>
         <div class="center">
           <Card v-for="(card, index) of dealerCards" :key="getKeyForCard(card)" :cardDetails="card" :isHole="card.isHole" :index="index" />
         </div>
@@ -214,6 +220,12 @@ export default {
     position: relative;
     margin-bottom: 2em;
     padding: 1em;
+  }
+  .dealer-notif {
+    position: relative;
+    margin: auto;
+    z-index: 100;
+    top: 170px;
   }
   .players {
     width: 100%;

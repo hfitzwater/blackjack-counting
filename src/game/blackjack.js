@@ -21,6 +21,7 @@ export default class Blackjack {
     players = [];
     queue = [];
     discard = [];
+    state = PLAYER_STATE.ACTIVE;
     cards = [];
 
     constructor(options) {
@@ -124,6 +125,11 @@ export default class Blackjack {
         this.cards.push(hole);
         this.cards.push(this.queue.shift());
 
+        const dealerInitialScore = Blackjack.getHandValue(this.cards);
+        if( dealerInitialScore === 21 ) {
+          this.state = PLAYER_STATE.BLACKJACK;
+        }
+
         this.players.forEach((player) => {
             player.state = PLAYER_STATE.ACTIVE;
             this.discard = player.cards.concat(this.discard);
@@ -147,5 +153,12 @@ export default class Blackjack {
 
     hitDealer() {
       this.cards.push(this.queue.shift());
+
+      const dealerInitialScore = Blackjack.getHandValue(this.cards);
+      if( dealerInitialScore === 21 ) {
+        this.state = PLAYER_STATE.BLACKJACK;
+      } else if( dealerInitialScore > 21 ) {
+        this.state = PLAYER_STATE.BUST;
+      }
     }
 }
