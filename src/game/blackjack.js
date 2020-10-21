@@ -29,8 +29,6 @@ export default class Blackjack {
         this.decks.forEach(deck => {
             this.queue = this.queue.concat(deck.cards);
         });
-
-        console.log(this.queue);
     }
 
     resetDecks( numDecks ) {

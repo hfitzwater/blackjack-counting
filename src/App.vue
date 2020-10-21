@@ -15,4 +15,12 @@
 .center {
   text-align: center;
 }
+
+.inline {
+  display: inline;
+}
+
+.inline-block {
+  display: inline-block;
+}
 </style>

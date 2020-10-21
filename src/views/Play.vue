@@ -1,17 +1,22 @@
 <template>
   <div class="play">
-    <h1>This is the play page</h1>
+    <Card v-for="(card,index) of cards" :key="index" :cardDetails="card" />
   </div>
 </template>
 
 <script>
 import Blackjack from '../game/blackjack';
+import Card from '../components/Card';
 
 export default {
   name: "Play",
+  components: {
+    Card
+  },
   data() {
     return {
-      blackjack: null
+      blackjack: null,
+      cards: []
     }
   },
   created() {
@@ -23,7 +28,8 @@ export default {
       numExtraPlayers
     });
 
-    console.log( this.blackjack );
+    this.cards = this.blackjack.decks[0].peek(54);
+    console.log(this.cards);
   }
 }
 </script>
