@@ -1,5 +1,8 @@
 <template>
   <div class="menu">
+    <h1 class="width-100 center">
+      Blackjack
+    </h1>
     <Panel>
       <div>
         <router-link to="/play"> Play </router-link>
@@ -28,6 +31,5 @@ export default {
 <style scoped lang="less">
   .menu {
     text-align: center;
-    text-transform: uppercase;
   }
 </style>

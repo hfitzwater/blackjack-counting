@@ -3,13 +3,15 @@ import { COUNTING_STRATEGY } from '../../game/counting';
 const baseState = {
   numBots: "1",
   gameType: "2",
-  countStrat: COUNTING_STRATEGY.ZEN
+  countStrat: COUNTING_STRATEGY.ZEN,
+  showCount: true
 };
 
 export const OPTIONS_MUTATIONS = {
   SET_BOTS: 'setBots',
   SET_GAME_TYPE: 'setGameType',
-  SET_COUNT_STRAT: 'setCountStrat'
+  SET_COUNT_STRAT: 'setCountStrat',
+  SET_SHOW_COUNT: 'setShowCount'
 };
 
 const mutations = {
@@ -21,6 +23,9 @@ const mutations = {
   },
   [OPTIONS_MUTATIONS.SET_COUNT_STRAT] (state, countStrat) {
     state.countStrat = countStrat;
+  },
+  [OPTIONS_MUTATIONS.SET_SHOW_COUNT] (state, showCount) {
+    state.showCount = showCount;
   }
 };
 

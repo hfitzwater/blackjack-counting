@@ -1,15 +1,24 @@
 <template>
   <div id="app">
-    <div class="width-100 center">
-      <h1>Blackjack</h1>
-    </div>
     <router-view />
   </div>
 </template>
 
 <style lang="less">
+html, body, #app {
+  height: 100%;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
 .width-100 {
   width: 100%;
+}
+
+.width-50 {
+  width: 50%;
 }
 
 .center {
@@ -22,5 +31,9 @@
 
 .inline-block {
   display: inline-block;
+}
+
+.bx--loading-overlay {
+  background-color: transparent !important;
 }
 </style>

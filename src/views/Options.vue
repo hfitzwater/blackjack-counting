@@ -1,5 +1,8 @@
 <template>
   <div class="options">
+    <h1 class="width-100 center">
+      Blackjack
+    </h1>
     <Panel>
       <div>
         <cv-dropdown theme="light" label="Bots" :value="numBots" @change="numBotsChanged($event)">
@@ -38,6 +41,11 @@
       </div>
       <br>
       <div>
+        <cv-checkbox label="Show Count" :checked="showCount" :value="showCount.toString()" @change="showCountChanged($event)">
+        </cv-checkbox>
+      </div>
+      <br>
+      <div>
         <router-link to="/"> Back </router-link>
       </div>
     </Panel>
@@ -59,7 +67,8 @@ export default {
       strats: Object.keys(COUNTING_STRATEGY).map(key => COUNTING_STRATEGY[key]),
       numBots: this.$store.state.options.numBots,
       gameType: this.$store.state.options.gameType,
-      countStrat: this.$store.state.options.countStrat
+      countStrat: this.$store.state.options.countStrat,
+      showCount: this.$store.state.options.showCount
     }
   },
   methods: {
@@ -71,6 +80,9 @@ export default {
     },
     countStratChanged(newValue) {
       this.$store.commit(OPTIONS_MUTATIONS.SET_COUNT_STRAT, newValue);
+    },
+    showCountChanged(newValue) {
+      this.$store.commit(OPTIONS_MUTATIONS.SET_SHOW_COUNT, newValue);
     }
   }
 }

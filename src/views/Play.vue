@@ -1,25 +1,39 @@
 <template>
-  <div class="play">
-    <div class="dealer">
-      <cv-loading style="position:absolute;" :active="dealerDrawing" overlay></cv-loading>
+  <div class="play-container">
+    <div class="play">
+      <div class="width-100 center">
+        <h1>Blackjack</h1>
+      </div>
+      <div class="dealer">
+        <cv-loading style="position:absolute;" :active="dealerDrawing" overlay></cv-loading>
+        <div class="center">
+          <Card v-for="(card, index) of dealerCards" :key="getKeyForCard(card)" :cardDetails="card" :index="index" />
+        </div>
+        <div class="center" v-if="dealerCards[0].isHole">
+          Dealer ({{ Blackjack.getHandValue([dealerCards[1]]) }})
+        </div>
+        <div class="center" v-else>
+          Dealer ({{ Blackjack.getHandValue(dealerCards) }})
+        </div>
+      </div>
+      <div class="players">
+        <Player v-for="(player) of blackjack.players" :playerDetails="player" :botsPlaying="botsPlaying" :key="getKeyForPlayer(player)" @continue="handleContinue" />
+      </div>
+      <br><br>
       <div class="center">
-        <Card v-for="(card,index) of blackjack.cards" :key="index" :cardDetails="card" />
-      </div>
-      <div class="center" v-if="blackjack.cards[0].isHole">
-        Dealer ({{ Blackjack.getHandValue([blackjack.cards[1]]) }})
-      </div>
-      <div class="center" v-else>
-        Dealer ({{ Blackjack.getHandValue(blackjack.cards) }})
+        
+        <router-link to="/">
+          Quit
+        </router-link>
       </div>
     </div>
-    <div class="players">
-      <Player v-for="(player,index) of blackjack.players" :playerDetails="player" :botsPlaying="botsPlaying" :key="index" @continue="handleContinue" />
-    </div>
-    <br><br>
-    <div class="center">
-      <router-link to="/">
-        Quit
-      </router-link>
+    <div class="discard">
+      <div class="width-100 center">
+        <h1>Discard</h1>
+      </div>
+      <div v-for="card of blackjack.discard" :key="getKeyForCard(card)">
+        <Card :cardDetails="card" />
+      </div>
     </div>
   </div>
 </template>
@@ -61,6 +75,13 @@ export default {
     this.handleContinue();
   },
   methods: {
+    getKeyForCard(card) {
+      return `${card.designator.name} of ${card.suit.name}`;
+    },
+    getKeyForPlayer(player) {
+      if( player.isHuman ) return 'Human';
+      return player.name;
+    },
     async handleContinue() {
       await this.waitForBots();
     },
@@ -155,7 +176,10 @@ export default {
         const human = this.blackjack.players.find(p => p.isHuman);
         const humanIsDone = human.state !== PLAYER_STATE.ACTIVE;
         const activeBotsStill = activeBots.filter(b => b.state === PLAYER_STATE.ACTIVE);
-        if( humanIsDone && activeBotsStill.length ) {
+
+        console.log('activeBotsStill', activeBotsStill);
+
+        if( humanIsDone && activeBotsStill.length > 0 ) {
           return this.waitForBots();
         } else if( humanIsDone ) {
           return this.finishHand();
@@ -164,6 +188,9 @@ export default {
     }
   },
   computed: {
+    dealerCards() {
+      return this.blackjack.cards;
+    },
     blackjack() {
       // TODO: change access
       return this.$store.state.blackjack.blackjack;
@@ -173,6 +200,10 @@ export default {
 </script>
 
 <style scoped lang="less">
+  .play {
+    width: 100%;
+    background-color: #fefefe;
+  }
   .dealer {
     position: relative;
     margin-bottom: 2em;
@@ -180,9 +211,28 @@ export default {
   }
   .players {
     width: 100%;
+    display: flex;
+    flex-direction: row;
+    // justify-items: center;
+
+    > * {
+      flex: 1 1 auto;
+      text-align: center;
+    }
+  }
+  .play-container {
     display: grid;
     grid-gap: 0.5rem;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 5fr 1fr;
     justify-items: center;
+    height: 100%;
+    background-color: #3c3c3c;
+  }
+  .discard {
+    height: 100%;
+    width: 100%;
+    background-color: #fefefe;
+    overflow-y: scroll;
+    text-align: center;
   }
 </style>
