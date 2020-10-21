@@ -1,30 +1,30 @@
 <template>
   <div :class="getCardClass()" style="vertical-align: top;">
-    <div :class="{ card: true, red: card.suit.color === 'red' }">
-      <template v-if="!card.isHole">
+    <div :class="{ card: true, red: cardDetails.suit.color === 'red' }">
+      <template v-if="!isHole">
         <div class="top-left">
           <div>
-            {{ this.card.designator.name }}
+            {{ this.cardDetails.designator.name }}
           </div>
           <div>
-            {{ this.card.suit.icon }}
+            {{ this.cardDetails.suit.icon }}
           </div>
         </div>
         <div class="main-icon">
-          {{ this.card.suit.icon }}
+          {{ this.cardDetails.suit.icon }}
         </div>
         <div class="bottom-right">
           <div>
-            {{ this.card.suit.icon }}
+            {{ this.cardDetails.suit.icon }}
           </div>
           <div class="flip">
-            {{ this.card.designator.name }}
+            {{ this.cardDetails.designator.name }}
           </div>
         </div>
       </template>
     </div>
-    <div v-if="!this.card.isHole && this.showCount" class="width-100 center" style="font-size: 1.2em; margin-bottom: 0.5em;">
-      {{ Counter.lookupValue(this.card.designator, countStrat) }}
+    <div v-if="!isHole && this.showCount" class="width-100 left" style="font-size: 1.2em; margin-bottom: 0.5em;">
+      {{ Counter.lookupValue(this.cardDetails.designator, countStrat) }}
     </div>
   </div>
 </template>
@@ -36,12 +36,17 @@ export default {
   name: "Card",
   props: [
     "cardDetails",
+    "isHole",
     "index"
   ],
+  watch: {
+    cardDetails(val) {
+      console.log(val);
+    }
+  },
   data() {
     return {
       Counter,
-      card: this.cardDetails,
       countStrat: this.$store.state.options.countStrat,
       showCount: this.$store.state.options.showCount
     }

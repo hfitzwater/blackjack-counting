@@ -1,6 +1,6 @@
 <template>
   <div class="options">
-    <h1 class="width-100 center">
+    <h1 class="width-100 center game-title">
       Blackjack
     </h1>
     <Panel>
@@ -46,7 +46,9 @@
       </div>
       <br>
       <div>
-        <router-link to="/"> Back </router-link>
+        <cv-button @click="back()" kind="tertiary" class="width-100">
+          Back
+        </cv-button>
       </div>
     </Panel>
   </div>
@@ -83,6 +85,9 @@ export default {
     },
     showCountChanged(newValue) {
       this.$store.commit(OPTIONS_MUTATIONS.SET_SHOW_COUNT, newValue);
+    },
+    back() {
+      this.$router.push('/');
     }
   }
 }

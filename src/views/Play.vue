@@ -1,15 +1,15 @@
 <template>
   <div class="play-container">
     <div class="play">
-      <div class="width-100 center">
+      <div class="width-100 center game-title">
         <h1>Blackjack</h1>
       </div>
       <div class="dealer">
         <cv-loading style="position:absolute;" :active="dealerDrawing" overlay></cv-loading>
         <div class="center">
-          <Card v-for="(card, index) of dealerCards" :key="getKeyForCard(card)" :cardDetails="card" :index="index" />
+          <Card v-for="(card, index) of dealerCards" :key="getKeyForCard(card)" :cardDetails="card" :isHole="card.isHole" :index="index" />
         </div>
-        <div class="center" v-if="dealerCards[0].isHole">
+        <div class="center" v-if="!revealHole">
           Dealer ({{ Blackjack.getHandValue([dealerCards[1]]) }})
         </div>
         <div class="center" v-else>
@@ -21,10 +21,9 @@
       </div>
       <br><br>
       <div class="center">
-        
-        <router-link to="/">
+        <cv-button @click="quit()" kind="tertiary">
           Quit
-        </router-link>
+        </cv-button>
       </div>
     </div>
     <div class="discard">
@@ -86,12 +85,14 @@ export default {
       await this.waitForBots();
     },
     async finishHand() {
-      this.blackjack.cards[0].isHole = false;
+      Object.assign(this.dealerCards[0], {
+        isHole: false
+      });
 
-      let dealerScore = Blackjack.getHandValue(this.blackjack.cards);
+      let dealerScore = Blackjack.getHandValue(this.dealerCards);
       while(dealerScore < 17) {
         await this.dealerDraw();
-        dealerScore = Blackjack.getHandValue(this.blackjack.cards);
+        dealerScore = Blackjack.getHandValue(this.dealerCards);
       }
 
       this.dealerDrawing = false;
@@ -99,7 +100,7 @@ export default {
     },
     async dealerDraw() {
       this.dealerDrawing = true;
-      let dealerScore = Blackjack.getHandValue(this.blackjack.cards);
+      let dealerScore = Blackjack.getHandValue(this.dealerCards);
       if( dealerScore < 17 ) {
         return new Promise((res) => {
           setTimeout(() => {
@@ -109,8 +110,12 @@ export default {
         });
       }
     },
+    quit() {
+      this.$router.push('/');
+    },
     payout() {
       setTimeout(() => {
+        // TODO: payout bets
         const newState = this.blackjack.deal();
         this.$store.commit(BLACKJACK_MUTATIONS.SET_BLACKJACK, newState);
         this.handleContinue();
@@ -175,9 +180,7 @@ export default {
         
         const human = this.blackjack.players.find(p => p.isHuman);
         const humanIsDone = human.state !== PLAYER_STATE.ACTIVE;
-        const activeBotsStill = activeBots.filter(b => b.state === PLAYER_STATE.ACTIVE);
-
-        console.log('activeBotsStill', activeBotsStill);
+        const activeBotsStill = this.blackjack.players.filter(p => !p.isHuman && p.state === PLAYER_STATE.ACTIVE);
 
         if( humanIsDone && activeBotsStill.length > 0 ) {
           return this.waitForBots();
@@ -190,6 +193,9 @@ export default {
   computed: {
     dealerCards() {
       return this.blackjack.cards;
+    },
+    revealHole() {
+      return !this.dealerCards[0].isHole;
     },
     blackjack() {
       // TODO: change access
@@ -213,7 +219,6 @@ export default {
     width: 100%;
     display: flex;
     flex-direction: row;
-    // justify-items: center;
 
     > * {
       flex: 1 1 auto;

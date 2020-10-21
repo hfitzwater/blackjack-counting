@@ -25,12 +25,20 @@ html, body, #app {
   text-align: center;
 }
 
+.left {
+  text-align: left;
+}
+
 .inline {
   display: inline;
 }
 
 .inline-block {
   display: inline-block;
+}
+
+.game-title {
+  margin: 1em 0;
 }
 
 .bx--loading-overlay {
