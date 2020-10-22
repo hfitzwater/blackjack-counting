@@ -23,7 +23,7 @@
         </div>
       </template>
     </div>
-    <div v-if="!isHole && this.showCount" class="width-100 left" style="font-size: 1.2em; margin-bottom: 0.5em;">
+    <div v-if="!isHole && this.showCount" class="card-count-value">
       {{ Counter.lookupValue(this.cardDetails.designator, countStrat) }}
     </div>
   </div>
@@ -78,36 +78,50 @@ export default {
     color: #3c3c3c;
     background: rgb(244,244,244);
     background: linear-gradient(90deg, rgba(244,244,244,1) 17%, rgba(200,200,200,1) 56%, rgba(244,244,244,1) 79%);
+
+    &.red {
+      color: rgb(177, 1, 1);
+    }
+
+    .main-icon {
+      font-size: 64px;
+      width: 100%;
+      height: 100%;
+      vertical-align: middle;
+      text-align: center;
+      position: absolute;
+      top: 22px
+    }
+
+    .flip {
+      transform: scale(-1, -1);
+    }
+
+    .top-left {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+    }
+
+    .bottom-right {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+    }
   }
 
-  .red {
-    color: rgb(177, 1, 1);
-  }
-
-  .main-icon {
-    font-size: 64px;
-    width: 100%;
-    height: 100%;
-    vertical-align: middle;
-    text-align: center;
-    position: absolute;
-    top: 22px
-  }
-
-  .flip {
-    transform: scale(-1, -1);
-  }
-
-  .top-left {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-  }
-
-  .bottom-right {
-    position: absolute;
-    bottom: 6px;
-    right: 6px;
+  .card-count-value {
+    position: relative;
+    top: -20px;
+    left: -8px;
+    font-size: 16px;
+    line-height: 30px;
+    width: 30px;
+    height: 30px;
+    background-color: #3c3c3c;
+    color: #efefef;
+    font-weight: 900;
+    border-radius: 50%;
   }
 
   @card-offset-top: 12px;

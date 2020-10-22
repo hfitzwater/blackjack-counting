@@ -244,9 +244,18 @@ export default class Blackjack {
     }
 
     payout() {
+      const payouts = {};
       const houseScore = Blackjack.getHandValue(this.cards);
 
       this.players.forEach(player => {
+        let playerWasPaid = false;
+        
+        const addPayout = (player, amount) => {
+          playerWasPaid = true;
+
+          payouts[player.index] = amount;
+        };
+
         const playerScore = Blackjack.getHandValue(player.cards);
 
         const houseBust = this.state === PLAYER_STATE.BUST;
@@ -255,17 +264,31 @@ export default class Blackjack {
         if( !houseBust ) {
           if( !playerBust ) {
             if( playerScore > houseScore ) {
-              player.monies += player.bet * 2;
+              const amount = player.bet * 2;
+              player.monies += amount;
+
+              addPayout(player, amount);
+
               this.monies -= player.bet;
             }
           }
         } else {
           if( !playerBust ) {
-            player.monies += player.bet + (player.bet * 1.5);
+            const amount = player.bet * 2;
+            player.monies += amount;
+
+            addPayout(player, amount);
+
             this.monies -= player.bet * 1.5;
           }
         }
+
+        if( !playerWasPaid ) {
+          addPayout(player, -1 * player.bet);
+        }
       });
+
+      return payouts;
     }
 }
 

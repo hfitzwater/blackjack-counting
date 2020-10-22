@@ -1,7 +1,7 @@
 import { COUNTING_STRATEGY } from '../../game/counting';
 
 const baseState = {
-  numBots: "1",
+  numBots: "2",
   gameType: "2",
   countStrat: COUNTING_STRATEGY.ZEN,
   showCount: true,

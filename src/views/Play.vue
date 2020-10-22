@@ -12,7 +12,7 @@
           />
         </div>
         <div class="center status-line">
-          Dealer ({{ dealerScore }}) ${{ blackjack.monies }}
+          Dealer ({{ getDealerScore() }}) ${{ blackjack.monies }}
         </div>
       </div>
       <div class="players">
@@ -21,6 +21,7 @@
           :botsPlaying="botsPlaying"
           :waitingForPlayerReady="waitingForPlayerReady"
           :dealerDrawing="dealerDrawing"
+          :payout="getPlayerPayout(player)"
           :key="getKeyForPlayer(player)"
           @continue="handleContinue"
         />
@@ -65,6 +66,7 @@ export default {
       botsPlaying: false,
       dealerDrawing: false,
       waitingForPlayerReady: false,
+      payouts: {},
       showCount: this.$store.state.options.showCount,
       countStrat: this.$store.state.options.countStrat
     }
@@ -127,10 +129,16 @@ export default {
     quit() {
       this.$router.push('/');
     },
+    clearPayouts() {
+      this.payouts = {};
+    },
     dealNextHand() {
+      this.collectBotBets();
       this.collectPlayerBet();
+      this.clearPayouts();
 
       this.waitingForPlayerReady = false;
+
       const newState = this.blackjack.deal();
       this.$store.commit(BLACKJACK_MUTATIONS.SET_BLACKJACK, newState);
       this.handleContinue();
@@ -139,9 +147,7 @@ export default {
       this.$store.commit(OPTIONS_MUTATIONS.SET_SHOW_COUNT, !this.$store.state.options.showCount);
     },
     payout() {
-      this.blackjack.payout();
-      this.collectBotBets();
-
+      this.payouts = this.blackjack.payout();
       this.waitingForPlayerReady = true;
     },
     collectBotBets() {
@@ -234,23 +240,31 @@ export default {
         return acc.concat(player.cards);
       }, this.blackjack.discard);
     },
+    getPlayerPayout(player) {
+      const payout = this.payouts[player.index];
+      if( payout ) {
+        return payout;
+      }
+
+      return null;
+    },
+    getDealerScore() {
+      if( this.revealHole || this.dealerDrawing ) {
+        return Blackjack.getHandValue(this.dealerCards);
+      } else {
+        return Blackjack.getHandValue([this.dealerCards[1]])
+      }
+    }
   },
   computed: {
     dealerCards() {
       return this.blackjack.cards;
     },
     revealHole() {
-      return !this.dealerCards[0].isHole;
+      return !this.dealerCards[0].isHole || this.dealerDrawing;
     },
     blackjack() {
       return this.$store.state.blackjack.blackjack;
-    },
-    dealerScore() {
-      if( this.revealHole ) {
-        return Blackjack.getHandValue(this.dealerCards);
-      } else {
-        return Blackjack.getHandValue([this.dealerCards[1]])
-      }
     }
   }
 }

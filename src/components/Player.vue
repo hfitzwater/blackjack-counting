@@ -1,10 +1,14 @@
 <template>
-  <div class="player">
+  <div class="player" ref="playerElement">
     <cv-loading style="position:absolute;" :active="thinking" overlay></cv-loading>
     <div class="state" v-if="player.state !== PLAYER_STATE.ACTIVE">
       <div class="player-status">
         {{ player.state.toUpperCase() }}
       </div>
+    </div>
+
+    <div :class="{ payout: true, red: payout < 0 }" v-if="payout">
+      {{ payoutText }}
     </div>
 
     <div class="avatar">
@@ -54,10 +58,6 @@
         class="width-25">
         Stand
       </cv-button>
-      <br><br>
-      <div v-if="showCount">
-        Running Count: {{ Counter.countCards(getExposedCards(), countStrat) }}
-      </div>
     </div>
   </div>
 </template>
@@ -66,7 +66,6 @@
 import Card from '../components/Card';
 import Blackjack from '../game/blackjack';
 import { PLAYER_STATE } from '../game/blackjack';
-import Counter from '../game/counting';
 
 export default {
   name: "Player",
@@ -77,11 +76,11 @@ export default {
     "playerDetails",
     "botsPlaying",
     "waitingForPlayerReady",
-    "dealerDrawing"
+    "dealerDrawing",
+    "payout"
   ],
   data() {
     return {
-      Counter,
       PLAYER_STATE,
       player: this.playerDetails,
       countStrat: this.$store.state.options.countStrat,
@@ -108,11 +107,6 @@ export default {
     },
     getKeyForCard(card) {
       return `${card.designator.name} of ${card.suit.name}`;
-    },
-    getExposedCards() {
-      return this.blackjack.players.reduce((acc, player) => {
-        return acc.concat(player.cards);
-      }, this.blackjack.discard);
     },
     hit() {
       this.blackjack.hitPlayer(this.player);
@@ -164,6 +158,20 @@ export default {
     },
     showCount() {
       return this.$store.state.options.showCount
+    },
+    payoutText() {
+      let text = ``;
+      if( this.payout ) {
+        if( this.payout < 0 ) {
+          text = `-`;
+        } else {
+          text = `+`;
+        }
+
+        text += ` $${Math.abs(this.payout)}`;
+      }
+
+      return text;
     }
   }
 }
@@ -229,6 +237,35 @@ export default {
     > button {
       min-width: 150px;
       max-width: 150px;
+    }
+  }
+
+  @keyframes beat {
+    0% {
+      font-size: 2.5em;
+    }
+
+    100% {
+      font-size: 3em;
+    }
+  }
+
+  .payout {
+    font-size: 2.5em;
+    color: green;
+    position: absolute;
+    right: 25%;
+    font-weight: 900;
+
+    animation-name: beat; 
+    animation-duration: 1s;
+    animation-direction: alternate; 
+    animation-iteration-count: infinite; 
+    animation-play-state: running;
+    animation-timing-function: linear;
+
+    &.red {
+      color: rgb(177, 1, 1);
     }
   }
 </style>
