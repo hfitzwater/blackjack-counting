@@ -6,6 +6,9 @@
     <Panel>
       <div>
         <cv-dropdown theme="light" label="Bots" :value="numBots" @change="numBotsChanged($event)">
+          <cv-dropdown-item value="0">
+            0
+          </cv-dropdown-item>
           <cv-dropdown-item value="1">
             1
           </cv-dropdown-item>
