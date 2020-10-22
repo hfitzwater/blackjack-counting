@@ -7,7 +7,7 @@
       <div class="dealer">
         <cv-loading style="position:absolute;" :active="dealerDrawing" overlay></cv-loading>
         <cv-toast-notification
-          v-if="revealHole && Blackjack.getHandValue(this.dealerCards) >= 21"
+          v-if="revealHole && Blackjack.getHandValue(dealerCards) >= 21"
           class="dealer-notif"
           title="Status"
           :sub-title="blackjack.state.toUpperCase()">
@@ -15,11 +15,8 @@
         <div class="center">
           <Card v-for="(card, index) of dealerCards" :key="getKeyForCard(card)" :cardDetails="card" :isHole="card.isHole" :index="index" />
         </div>
-        <div class="center" v-if="!revealHole">
-          Dealer ({{ Blackjack.getHandValue([dealerCards[1]]) }})
-        </div>
-        <div class="center" v-else>
-          Dealer ({{ Blackjack.getHandValue(dealerCards) }})
+        <div class="center">
+          Dealer ({{ dealerScore }}) [{{ blackjack.score }}]
         </div>
       </div>
       <div class="players">
@@ -27,19 +24,18 @@
       </div>
       <br><br>
       <div class="center">
+        <cv-button @click="dealNextHand()" kind="primary" v-if="waitingForPlayerReady">
+          Deal
+        </cv-button>
+        <cv-button @click="toggleCount()" kind="secondary">
+          Toggle Count
+        </cv-button>
         <cv-button @click="quit()" kind="tertiary">
           Quit
         </cv-button>
       </div>
     </div>
-    <div class="discard">
-      <div class="width-100 center">
-        <h1>Discard</h1>
-      </div>
-      <div v-for="card of blackjack.discard" :key="getKeyForCard(card)">
-        <Card :cardDetails="card" />
-      </div>
-    </div>
+    <Discard />
   </div>
 </template>
 
@@ -47,20 +43,24 @@
 import Blackjack from '../game/blackjack';
 import Card from '../components/Card';
 import Player from '../components/Player';
+import Discard from '../components/Discard';
 import { BLACKJACK_MUTATIONS } from '../store/modules/BlackjackStore';
+import { OPTIONS_MUTATIONS } from '../store/modules/OptionsStore';
 import { PLAYER_STATE } from '../game/blackjack';
 
 export default {
   name: "Play",
   components: {
     Card,
-    Player
+    Player,
+    Discard
   },
   data() {
     return {
       Blackjack,
       botsPlaying: false,
-      dealerDrawing: false
+      dealerDrawing: false,
+      waitingForPlayerReady: false
     }
   },
   created() {
@@ -119,13 +119,46 @@ export default {
     quit() {
       this.$router.push('/');
     },
+    dealNextHand() {
+      this.waitingForPlayerReady = false;
+      const newState = this.blackjack.deal();
+      this.$store.commit(BLACKJACK_MUTATIONS.SET_BLACKJACK, newState);
+      this.handleContinue();
+    },
+    toggleCount() {
+      this.$store.commit(OPTIONS_MUTATIONS.SET_SHOW_COUNT, !this.$store.state.options.showCount);
+    },
     payout() {
-      setTimeout(() => {
-        // TODO: payout bets
-        const newState = this.blackjack.deal();
-        this.$store.commit(BLACKJACK_MUTATIONS.SET_BLACKJACK, newState);
-        this.handleContinue();
-      }, 5000 );
+      const houseScore = Blackjack.getHandValue(this.dealerCards);
+
+      this.blackjack.players.forEach(player => {
+        const playerScore = Blackjack.getHandValue(player.cards);
+
+        if( this.blackjack.state !== PLAYER_STATE.BUST ) {
+          if( player.state === PLAYER_STATE.BUST ) {
+            player.score--;
+            this.blackjack.score++;
+          } else {
+            if( playerScore > houseScore ) {
+              player.score++;
+              this.blackjack.score--;
+            } else if( houseScore > playerScore) {
+              player.score--;
+              this.blackjack.score++;
+            }
+          }
+        } else {
+          if( player.state === PLAYER_STATE.BUST ) {
+            player.score--;
+            this.blackjack.score++;
+          } else {
+            player.score++;
+            this.blackjack.score--;
+          }
+        }
+      });
+
+      this.waitingForPlayerReady = true;
     },
     async waitForBots() {
       let tasks = [];
@@ -204,8 +237,14 @@ export default {
       return !this.dealerCards[0].isHole;
     },
     blackjack() {
-      // TODO: change access
       return this.$store.state.blackjack.blackjack;
+    },
+    dealerScore() {
+      if( this.revealHole ) {
+        return Blackjack.getHandValue(this.dealerCards);
+      } else {
+        return Blackjack.getHandValue([this.dealerCards[1]])
+      }
     }
   }
 }

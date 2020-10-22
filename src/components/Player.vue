@@ -10,10 +10,10 @@
     </div>
 
     <div class="avatar">
-      <img :src="getPlayerAvatar(player)" :alt="player.name">
+      <img :src="getPlayerAvatar(player)" :class="{ 'active': thinking || (player.isHuman && !botsPlaying) }" :alt="player.name">
     </div>
     <h3>
-      {{ player.isHuman ? 'Player' : player.name }} ({{ total }})
+      {{ player.isHuman ? 'Player' : player.name }} ({{ total }}) [{{ player.score }}]
     </h3>
     <div>
       <Card v-for="(card, index) of player.cards" :key="getKeyForCard(card)" :cardDetails="card" :index="index" />
@@ -26,7 +26,7 @@
         Stay
       </cv-button>
       <br><br>
-      <div style="font-size: 1.5em;">
+      <div v-if="showCount">
         Running Count: {{ Counter.countCards(getExposedCards(), countStrat) }}
       </div>
     </div>
@@ -105,11 +105,13 @@ export default {
       return Blackjack.getHandValue(this.player.cards);
     },
     blackjack() {
-      // TODO: change access
       return this.$store.state.blackjack.blackjack;
     },
     thinking() {
       return this.player.thinking;
+    },
+    showCount() {
+      return this.$store.state.options.showCount
     }
   }
 }
@@ -138,6 +140,16 @@ export default {
       top: 245px;
     }
   }
+
+  @keyframes pulse {
+    0% {
+      border-color: #efefef;
+    }
+
+    100% {
+      border-color: gold;
+    }
+  }
   
   .avatar {
     margin: auto;
@@ -147,6 +159,15 @@ export default {
       height: 128px;
       border-radius: 50%;
       border: 5px solid #efefef;
+
+      &.active {
+        animation-name: pulse; 
+        animation-duration: 1.5s;
+        animation-direction: alternate; 
+        animation-iteration-count: infinite; 
+        animation-play-state: running;
+        animation-timing-function: ease-out;
+      }
     }
   }
 </style>

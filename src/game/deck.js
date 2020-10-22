@@ -76,7 +76,8 @@ export const DESIGNATOR = {
 
 export default class Deck {
     options = {
-        jokers: 0
+        jokers: 0,
+        effectiveDeckNumber: 0
     };
     cards = [];
 
@@ -85,27 +86,33 @@ export default class Deck {
             if( options.jokers ) {
                 this.options.jokers = options.jokers;
             }
+
+            if( options.effectiveDeckNumber ) {
+                this.options.effectiveDeckNumber = options.effectiveDeckNumber;
+            }
         }
 
-        this.cards = Deck.initCards(this.options.jokers);
+        this.cards = Deck.initCards(this.options.jokers, this.options.effectiveDeckNumber);
         this.shuffle();
 
         return this;
     }
 
-    static initCards(numJokers) {
+    static initCards(numJokers, effectiveDeckNumber=0) {
         const allSuits = Object.keys(SUIT);
         const allDesig = Object.keys(DESIGNATOR).filter(key => key !== DESIGNATOR.NONE.name);
 
         let cards = [];
         allSuits.forEach(suitKey => {
             allDesig.forEach(desigKey => {
-                cards.push(new Card(SUIT[suitKey], DESIGNATOR[desigKey]));
+                cards.push(new Card(SUIT[suitKey], DESIGNATOR[desigKey], effectiveDeckNumber));
             });
         });
 
         if( numJokers ) {
-            cards.push(new Card(SPECIAL_SUIT.JOKER, DESIGNATOR.NONE));            
+            for(let i=0; i<numJokers; i++) {
+                cards.push(new Card(SPECIAL_SUIT.JOKER, DESIGNATOR.NONE, effectiveDeckNumber));
+            }
         }
 
         return cards;
@@ -146,9 +153,11 @@ export default class Deck {
 export class Card { 
     suit = null;
     designator = null;
+    effectiveDeckNumber = 0;
     
-    constructor(suit, designator) {
+    constructor(suit, designator, effectiveDeckNumber=0) {
         this.suit = suit;
         this.designator = designator; 
+        this.effectiveDeckNumber = effectiveDeckNumber;
     }
 }

@@ -42,8 +42,7 @@ export default {
   data() {
     return {
       Counter,
-      countStrat: this.$store.state.options.countStrat,
-      showCount: this.$store.state.options.showCount
+      countStrat: this.$store.state.options.countStrat
     }
   },
   methods: {
@@ -55,6 +54,11 @@ export default {
       }
 
       return cardClass;
+    }
+  },
+  computed: {
+    showCount() {
+      return this.$store.state.options.showCount
     }
   }
 }

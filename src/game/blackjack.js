@@ -21,6 +21,7 @@ export default class Blackjack {
     players = [];
     queue = [];
     discard = [];
+    score = 0;
     state = PLAYER_STATE.ACTIVE;
     cards = [];
 
@@ -54,6 +55,7 @@ export default class Blackjack {
             index: p + 1,
             cards: [],
             thinking: false,
+            score: 0,
             state: PLAYER_STATE.ACTIVE
           };
 
@@ -78,7 +80,9 @@ export default class Blackjack {
         let decks = [];
 
         for(let i=0; i<numDecks; i++) {
-            decks.push(new Deck().shuffle());
+            decks.push(new Deck({
+              effectiveDeckNumber: i
+            }).shuffle());
         }
 
         return decks;
@@ -112,44 +116,88 @@ export default class Blackjack {
       return score;
     }
 
+    shiftQueue() {
+      const card = this.queue.shift();
+
+      if( this.queue.length > 0 && this.queue.length % 52 === 0 ) {
+        /*
+          Deck expired
+          shuffle and cycle top deck
+        */
+        let topDeck = this.decks.shift();
+        topDeck.shuffle();
+
+        this.queue = this.queue.concat(topDeck.cards);
+      }
+
+      return card;
+    }
+
+    collectDiscards() {
+      this.discard = this.cards.concat(this.discard);
+      
+      this.players.forEach(player => {
+        this.discard = player.cards.concat(this.discard);
+      });
+    }
+
+    resetPlayerState() {
+      this.state = PLAYER_STATE.ACTIVE;
+      this.cards = [];
+
+      this.players.forEach(player => {
+        player.state = PLAYER_STATE.ACTIVE;
+        player.cards = [];
+      });
+    }
+
+    markBlackjacks() {
+      const dealerInitialScore = Blackjack.getHandValue(this.cards);
+      if( dealerInitialScore === 21 ) {
+        this.state = PLAYER_STATE.BLACKJACK;
+      }
+
+      this.players.forEach(player => {
+        const initialScore = Blackjack.getHandValue(player.cards);
+        if( initialScore === 21 ) {
+          player.state = PLAYER_STATE.BLACKJACK;
+        }
+      });
+    }
+
     deal() {
-        this.discard = this.cards.concat(this.discard);
-        this.cards = [];
+        this.collectDiscards();
+        this.resetPlayerState();
 
-        let hole = this.queue.shift();
-        hole.isHole = true;
+        let participantCards = [this.cards];
+        this.players.forEach(player => {
+          participantCards.push(player.cards);
+        });
 
-        this.cards.push(hole);
-        this.cards.push(this.queue.shift());
-
-        const dealerInitialScore = Blackjack.getHandValue(this.cards);
-        if( dealerInitialScore === 21 ) {
-          this.state = PLAYER_STATE.BLACKJACK;
+        for(let cardNumber=0; cardNumber < 2; cardNumber++) {
+          for(let pIndex=0; pIndex<participantCards.length; pIndex++) {
+            if( cardNumber === 0 && pIndex === 0 ) {
+              // Dealer hole
+              let hole = this.shiftQueue();
+              hole.isHole = true;
+              participantCards[pIndex].push(hole);
+            } else {
+              participantCards[pIndex].push(this.shiftQueue());
+            }
+          }
         }
 
-        this.players.forEach((player) => {
-            player.state = PLAYER_STATE.ACTIVE;
-            this.discard = player.cards.concat(this.discard);
-            player.cards = [];
-
-            player.cards.push(this.queue.shift());
-            player.cards.push(this.queue.shift());
-
-            const initialScore = Blackjack.getHandValue(player.cards);
-            if( initialScore === 21 ) {
-              player.state = PLAYER_STATE.BLACKJACK;
-            }
-        });
+        this.markBlackjacks();
 
         return this;
     }
 
     hitPlayer(player) {
-      player.cards.push(this.queue.shift());
+      player.cards.push(this.shiftQueue());
     }
 
     hitDealer() {
-      this.cards.push(this.queue.shift());
+      this.cards.push(this.shiftQueue());
 
       const dealerInitialScore = Blackjack.getHandValue(this.cards);
       if( dealerInitialScore === 21 ) {
