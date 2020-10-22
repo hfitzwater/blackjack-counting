@@ -15,9 +15,6 @@
           <cv-dropdown-item value="3">
             3
           </cv-dropdown-item>
-          <cv-dropdown-item value="4">
-            4
-          </cv-dropdown-item>
         </cv-dropdown>
       </div>
       <br>
@@ -41,12 +38,27 @@
       </div>
       <br>
       <div>
-        <cv-checkbox label="Show Count" :checked="showCount" :value="showCount.toString()" @change="showCountChanged($event)">
-        </cv-checkbox>
+        <cv-toggle
+          :checked="showCount"
+          label="Count"
+          @change="showCountChanged($event)"
+          :value="showCount.toString()">
+          <template slot="text-left">Disabled</template>
+          <template slot="text-right">Enabled</template>
+        </cv-toggle>
       </div>
       <br>
       <div>
-        <cv-button @click="back()" kind="tertiary" class="width-100">
+        <cv-text-input
+          label="Player Name"
+          :value="playerName.toString()"
+          @change="playerNameChanged($event)"
+          placeholder="Enter Your Name">
+        </cv-text-input>
+      </div>
+      <br>
+      <div>
+        <cv-button @click="back()" kind="secondary" class="width-100" style="max-width: none;">
           Back
         </cv-button>
       </div>
@@ -70,7 +82,8 @@ export default {
       numBots: this.$store.state.options.numBots,
       gameType: this.$store.state.options.gameType,
       countStrat: this.$store.state.options.countStrat,
-      showCount: this.$store.state.options.showCount
+      showCount: this.$store.state.options.showCount,
+      playerName: this.$store.state.options.playerName
     }
   },
   methods: {
@@ -85,6 +98,9 @@ export default {
     },
     showCountChanged(newValue) {
       this.$store.commit(OPTIONS_MUTATIONS.SET_SHOW_COUNT, newValue);
+    },
+    playerNameChanged(event) {
+      this.$store.commit(OPTIONS_MUTATIONS.SET_PLAYER_NAME, event.target.value);
     },
     back() {
       this.$router.push('/');

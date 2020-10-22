@@ -17,6 +17,7 @@ export default {
 <style scoped lang="less">
 .panel {
   width: 500px;
+  max-width: 500px;
   margin: auto;
 }
 </style>

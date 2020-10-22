@@ -4,14 +4,16 @@ const baseState = {
   numBots: "1",
   gameType: "2",
   countStrat: COUNTING_STRATEGY.ZEN,
-  showCount: true
+  showCount: true,
+  playerName: 'Player'
 };
 
 export const OPTIONS_MUTATIONS = {
   SET_BOTS: 'setBots',
   SET_GAME_TYPE: 'setGameType',
   SET_COUNT_STRAT: 'setCountStrat',
-  SET_SHOW_COUNT: 'setShowCount'
+  SET_SHOW_COUNT: 'setShowCount',
+  SET_PLAYER_NAME: 'setPlayerName'
 };
 
 const mutations = {
@@ -26,6 +28,9 @@ const mutations = {
   },
   [OPTIONS_MUTATIONS.SET_SHOW_COUNT] (state, showCount) {
     state.showCount = showCount;
+  },
+  [OPTIONS_MUTATIONS.SET_PLAYER_NAME] (state, playerName) {
+    state.playerName = playerName;
   }
 };
 
