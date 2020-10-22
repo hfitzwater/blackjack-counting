@@ -9,9 +9,22 @@ const randRange = (min, max) => {
 export const PLAYER_STATE = {
   ACTIVE: 'active',
   BUST: 'bust',
-  STAY: 'stay',
+  STAND: 'stand',
   BLACKJACK: 'blackjack',
   PUSH: 'push'
+};
+
+/* 
+  Easteregg: https://xkcd.com/948/
+*/
+export const AI = {
+  STANDARD: 'standard',
+  AGGRESSIVE: 'aggressive',
+  CONSERVATIVE: 'conservative',
+  /*
+    Easteregg: https://www.historyvshollywood.com/reelfaces/21mitblackjack.php
+  */
+  MIKE: 'Mike Aponte'
 };
 
 export default class Blackjack {
@@ -21,6 +34,7 @@ export default class Blackjack {
     players = [];
     queue = [];
     discard = [];
+    monies = 0;
     score = 0;
     state = PLAYER_STATE.ACTIVE;
     cards = [];
@@ -56,6 +70,9 @@ export default class Blackjack {
             cards: [],
             thinking: false,
             score: 0,
+            monies: 1000,
+            bet: 5,
+            brain: AI.STANDARD,
             state: PLAYER_STATE.ACTIVE
           };
 
@@ -64,6 +81,8 @@ export default class Blackjack {
             player.name = names[nameIndex];
 
             names.splice(nameIndex, 1);
+
+            Object.assign(player, this.getRandomBrain());
           }
 
           this.players.push(player);
@@ -74,6 +93,21 @@ export default class Blackjack {
         this.decks.forEach(deck => {
             this.queue = this.queue.concat(deck.cards);
         });
+    }
+
+    getRandomBrain() {
+      const level = randRange(0,3);
+      const brains = {
+        [0]: AI.AGGRESSIVE,
+        [1]: AI.STANDARD,
+        [2]: AI.CONSERVATIVE,
+        [3]: AI.MIKE
+      };
+      
+      return {
+        brain: brains[level],
+        level: level + 1
+      };
     }
 
     resetDecks( numDecks ) {
@@ -204,6 +238,87 @@ export default class Blackjack {
         this.state = PLAYER_STATE.BLACKJACK;
       } else if( dealerInitialScore > 21 ) {
         this.state = PLAYER_STATE.BUST;
+      } else if( dealerInitialScore >= 18 ) {
+        this.state = PLAYER_STATE.STAND;
       }
     }
+}
+
+const TASK = {
+  HIT: 'hit',
+  BET: 'bet'
+};
+
+const BRAINS = {
+  [TASK.HIT]: {
+    [AI.STANDARD]: (score) => {
+      return score < 16;
+    },
+    [AI.AGGRESSIVE]: (score) => {
+      return score < 17;
+    },
+    [AI.CONSERVATIVE]: (score) => {
+      return score < 15;
+    },
+    [AI.MIKE]: (score, count, blackjack) => {
+      const effectiveScore = score - count;
+      const dealerScore = Blackjack.getCardValue(blackjack.cards[1]);
+  
+      if( dealerScore === 10 && effectiveScore < 18) {
+        return true;
+      }
+  
+      if( score <= 14 ) {
+        return true;
+      }
+  
+      if( effectiveScore <= 10 ) {
+        return true;
+      }
+  
+      if( dealerScore <= 6 && effectiveScore <= 13 ) {
+        return true;
+      }
+  
+      return false;
+    }
+  },
+  [TASK.BET]: {
+    [AI.STANDARD]: () => {
+      return 10;
+    },
+    [AI.AGGRESSIVE]: () => {
+      return 15;
+    },
+    [AI.CONSERVATIVE]: () => {
+      return 5;
+    },
+    [AI.MIKE]: (count) => {
+      let bet = 10;
+
+      if( count >= 7 ) {
+        bet = 25;
+      } else if( count >= 3) {
+        bet = 20
+      } else if( count >= 1 ) {
+        bet = 15;
+      }
+
+      if( count <= -3 ) {
+        bet = 5;
+      }
+
+      return bet;
+    },
+  }
+};
+
+export class BotBrain {
+  static willHit(player, score, count, blackjack) {
+    return BRAINS[TASK.HIT][player.brain](score, count, blackjack);
+  }
+
+  static getBet(player, count) {
+    return BRAINS[TASK.BET][player.brain](player, count);
+  }
 }

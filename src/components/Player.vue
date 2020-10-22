@@ -12,18 +12,25 @@
     <div class="avatar">
       <img :src="getPlayerAvatar(player)" :class="{ 'active': thinking || (player.isHuman && !botsPlaying) }" :alt="player.name">
     </div>
-    <h3>
-      {{ player.isHuman ? 'Player' : player.name }} ({{ total }}) [{{ player.score }}]
-    </h3>
+    <div class="status-line">
+      {{ player.isHuman ? 'Player' : `${player.name} Lvl ${player.level}` }}
+      ({{ total }}) ${{ player.monies }} and betting {{ player.bet }}
+    </div>
     <div>
       <Card v-for="(card, index) of player.cards" :key="getKeyForCard(card)" :cardDetails="card" :index="index" />
     </div>
-    <div v-if="player.isHuman">
-      <cv-button @click="hit()" :disabled="botsPlaying" class="width-50 center">
+    <div v-if="player.isHuman" style="margin-top: 1em">
+      <cv-button @click="hit()" :disabled="botsPlaying" class="width-25">
         Hit
       </cv-button>
-      <cv-button kind="secondary" @click="stay()" :disabled="botsPlaying" class="width-50 center">
-        Stay
+      <cv-button kind="secondary" @click="stand()" :disabled="botsPlaying" class="width-25">
+        Stand
+      </cv-button>
+      <cv-button kind="tertiary" @click="decreaseBet()" :disabled="!waitingForPlayerReady || botsPlaying" class="width-25 flat-button">
+        - Bet
+      </cv-button>
+      <cv-button kind="tertiary" @click="increaseBet()" :disabled="!waitingForPlayerReady || botsPlaying" class="width-25 flat-button">
+        + Bet
       </cv-button>
       <br><br>
       <div v-if="showCount">
@@ -46,7 +53,8 @@ export default {
   },
   props: [
     "playerDetails",
-    "botsPlaying"
+    "botsPlaying",
+    "waitingForPlayerReady"
   ],
   data() {
     return {
@@ -94,10 +102,30 @@ export default {
 
       this.$emit('continue');
     },
-    stay() {
-      this.player.state = PLAYER_STATE.STAY;
+    stand() {
+      this.player.state = PLAYER_STATE.STAND;
 
       this.$emit('continue');
+    },
+    increaseBet() {
+      this.player.bet += 5;
+      if( this.player.bet > 200 ) {
+        this.player.bet = 200;
+      }
+
+      if( this.player.bet > this.player.monies ) {
+        this.player.bet = this.player.monies;
+      }
+    },
+    decreaseBet() {
+      this.player.bet -= 5;
+      if( this.player.bet < 5 ) {
+        this.player.bet = 5;
+      }
+
+      if( this.player.bet > this.player.monies ) {
+        this.player.bet = this.player.monies;
+      }
     }
   },
   computed: {
@@ -158,7 +186,7 @@ export default {
       width: 128px;
       height: 128px;
       border-radius: 50%;
-      border: 5px solid #efefef;
+      border: 8px solid #efefef;
 
       &.active {
         animation-name: pulse; 
