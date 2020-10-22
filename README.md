@@ -1,6 +1,25 @@
 # blackjack
 
-## Project setup
+## Play
+https://hfitzwater.github.io/blackjack-counting/
+
+## Docker
+1. Get the image
+```
+docker pull 3nigm4/blackjack-counting
+```
+
+2. Run container
+```
+docker container run -p 1337:80 3nigm4/blackjack-counting
+```
+
+3. Open it
+```
+http://localhost:1337/
+```
+
+## Contributing
 ```
 npm install
 ```
