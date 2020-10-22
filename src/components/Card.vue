@@ -71,12 +71,11 @@ export default {
     font-size: 12px;
     width: 85px;
     height: 120px;
-    border: 1px solid black;
+    border: 1px solid #bbb;
     border-radius: 4px;
     position: relative;
     font-weight: bold;
     color: #3c3c3c;
-
     background: rgb(244,244,244);
     background: linear-gradient(90deg, rgba(244,244,244,1) 17%, rgba(200,200,200,1) 56%, rgba(244,244,244,1) 79%);
   }

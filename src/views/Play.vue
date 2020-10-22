@@ -4,14 +4,26 @@
       <div class="dealer">
         <cv-loading style="position:absolute;" :active="dealerDrawing" overlay></cv-loading>
         <div class="center">
-          <Card v-for="(card, index) of dealerCards" :key="getKeyForCard(card)" :cardDetails="card" :isHole="card.isHole" :index="index" />
+          <Card v-for="(card, index) of dealerCards"
+            :key="getKeyForCard(card)"
+            :cardDetails="card"
+            :isHole="card.isHole"
+            :index="index"
+          />
         </div>
         <div class="center status-line">
           Dealer ({{ dealerScore }}) ${{ blackjack.monies }}
         </div>
       </div>
       <div class="players">
-        <Player v-for="(player) of blackjack.players" :playerDetails="player" :botsPlaying="botsPlaying" :waitingForPlayerReady="waitingForPlayerReady" :key="getKeyForPlayer(player)" @continue="handleContinue" />
+        <Player v-for="(player) of blackjack.players"
+          :playerDetails="player"
+          :botsPlaying="botsPlaying"
+          :waitingForPlayerReady="waitingForPlayerReady"
+          :dealerDrawing="dealerDrawing"
+          :key="getKeyForPlayer(player)"
+          @continue="handleContinue"
+        />
       </div>
       <br><br>
       <div class="global-action-bar">
@@ -127,35 +139,7 @@ export default {
       this.$store.commit(OPTIONS_MUTATIONS.SET_SHOW_COUNT, !this.$store.state.options.showCount);
     },
     payout() {
-      const houseScore = Blackjack.getHandValue(this.dealerCards);
-
-      this.blackjack.players.forEach(player => {
-        const playerScore = Blackjack.getHandValue(player.cards);
-
-        if( this.blackjack.state !== PLAYER_STATE.BUST ) {
-          if( player.state === PLAYER_STATE.BUST ) {
-            player.monies -= player.bet;
-            this.blackjack.monies += player.bet;
-          } else {
-            if( playerScore > houseScore ) {
-              player.monies += player.bet;
-              this.blackjack.monies -= player.bet;
-            } else if( houseScore > playerScore) {
-              player.monies -= player.bet;
-              this.blackjack.monies += player.bet;
-            }
-          }
-        } else {
-          if( player.state === PLAYER_STATE.BUST ) {
-            player.monies -= player.bet;
-            this.blackjack.monies += player.bet;
-          } else {
-            player.monies += player.bet * 1.5;
-            this.blackjack.monies -= player.bet * 1.5;
-          }
-        }
-      });
-
+      this.blackjack.payout();
       this.collectBotBets();
 
       this.waitingForPlayerReady = true;
@@ -276,8 +260,6 @@ export default {
   .play {
     min-width: 85%;
     color: #3c3c3c;
-
-    // background-color: #ccc;
 
     background: rgb(107,107,107);
     background: linear-gradient(0deg, rgba(107,107,107,1) 0%, rgba(221,221,221,1) 54%);

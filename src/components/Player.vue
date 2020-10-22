@@ -2,35 +2,56 @@
   <div class="player">
     <cv-loading style="position:absolute;" :active="thinking" overlay></cv-loading>
     <div class="state" v-if="player.state !== PLAYER_STATE.ACTIVE">
-      <cv-toast-notification
-        class="notif"
-        title="Status"
-        :sub-title="player.state.toUpperCase()">
-      </cv-toast-notification>
+      <div class="player-status">
+        {{ player.state.toUpperCase() }}
+      </div>
     </div>
 
     <div class="avatar">
-      <img :src="getPlayerAvatar(player)" :class="{ 'active': thinking || (player.isHuman && !botsPlaying) }" :alt="player.name">
+      <img
+        :src="getPlayerAvatar(player)"
+        :class="{ 'active': thinking || (player.isHuman && !botsPlaying) }"
+        :alt="player.name"
+      >
     </div>
     <div class="status-line">
-      {{ player.isHuman ? playerName : `${player.name} Lvl ${player.level}` }}
-      ({{ total }}) ${{ player.monies }} and betting {{ player.bet }}
+      {{ player.isHuman ? playerName : `Bot ${player.name} Lvl ${player.level}` }}
+      ({{ total }}) ${{ player.monies }} and betting ${{ player.bet }}
     </div>
     <div>
-      <Card v-for="(card, index) of player.cards" :key="getKeyForCard(card)" :cardDetails="card" :index="index" />
+      <Card v-for="(card, index) of player.cards"
+        :key="getKeyForCard(card)"
+        :cardDetails="card"
+        :index="index"
+      />
     </div>
     <div v-if="player.isHuman" class="player-actions">
-      <cv-button kind="tertiary" @click="decreaseBet()" :disabled="!waitingForPlayerReady || botsPlaying" class="width-25 flat-button">
+      <cv-button
+        kind="secondary"
+        @click="decreaseBet()"
+        v-if="waitingForPlayerReady && !dealerDrawing"
+        class="width-25 flat-button">
         - Bet
       </cv-button>
-      <cv-button kind="tertiary" @click="increaseBet()" :disabled="!waitingForPlayerReady || botsPlaying" class="width-25 flat-button">
+      <cv-button
+        kind="primary"
+        @click="increaseBet()"
+        v-if="waitingForPlayerReady && !dealerDrawing"
+        class="width-25 flat-button">
         + Bet
       </cv-button>
       <br>
-      <cv-button @click="hit()" :disabled="botsPlaying" class="width-25">
+      <cv-button
+        @click="hit()"
+        v-if="!waitingForPlayerReady && !botsPlaying && !dealerDrawing"
+        class="width-25">
         Hit
       </cv-button>
-      <cv-button kind="secondary" @click="stand()" :disabled="botsPlaying" class="width-25">
+      <cv-button
+        kind="secondary"
+        @click="stand()"
+        v-if="!waitingForPlayerReady && !botsPlaying && !dealerDrawing"
+        class="width-25">
         Stand
       </cv-button>
       <br><br>
@@ -55,7 +76,8 @@ export default {
   props: [
     "playerDetails",
     "botsPlaying",
-    "waitingForPlayerReady"
+    "waitingForPlayerReady",
+    "dealerDrawing"
   ],
   data() {
     return {
@@ -154,22 +176,18 @@ export default {
   }
 
   .state {
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    position: absolute;
-    z-index: 100;
-    font-size: 3em;
-    text-align: right;
-    padding: 0.2em;
+    pointer-events:none;
+    font-weight: 900;
+    padding: 0.5em;
+    margin: 0.5em 0;
+    z-index: 110;
 
-    .notif {
-      margin: auto;
-      position: relative;
-      top: 4px;
-      height: 81px;
-      max-width: 200px;
+    background: rgb(6,6,6);
+    background: radial-gradient(circle, rgba(6,6,6,0.95) 0%, rgba(255,255,255,0) 25%);
+
+    .player-status {
+      font-size: 1.5em;
+      color: #efefef;
     }
   }
 
@@ -179,32 +197,34 @@ export default {
     }
 
     100% {
-      border-color: #ebb33b;
+      border-color: gold;
     }
   }
   
   .avatar {
     margin: auto;
+    z-index: 120;
 
     > img {
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      border: 5px solid #efefef;
+      border: 8px solid #efefef;
 
       &.active {
         animation-name: pulse; 
-        animation-duration: 1.5s;
+        animation-duration: 1s;
         animation-direction: alternate; 
         animation-iteration-count: infinite; 
         animation-play-state: running;
-        animation-timing-function: ease-out;
+        animation-timing-function: linear;
       }
     }
   }
 
   .player-actions {
     margin-top: 0.1em;
+    z-index: 130;
 
     > button {
       min-width: 150px;

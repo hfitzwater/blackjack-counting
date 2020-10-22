@@ -95,33 +95,6 @@ export default class Blackjack {
         });
     }
 
-    getRandomBrain() {
-      const level = randRange(0,3);
-      const brains = {
-        [0]: AI.AGGRESSIVE,
-        [1]: AI.STANDARD,
-        [2]: AI.CONSERVATIVE,
-        [3]: AI.MIKE
-      };
-      
-      return {
-        brain: brains[level],
-        level: level + 1
-      };
-    }
-
-    resetDecks( numDecks ) {
-        let decks = [];
-
-        for(let i=0; i<numDecks; i++) {
-            decks.push(new Deck({
-              effectiveDeckNumber: i
-            }).shuffle());
-        }
-
-        return decks;
-    }
-
     static getCardValue(card) {
       const isJack = card.designator.name === "J";
       const isQueen = card.designator.name === "Q";
@@ -148,6 +121,33 @@ export default class Blackjack {
       }
 
       return score;
+    }
+
+    getRandomBrain() {
+      const level = randRange(0,3);
+      const brains = {
+        [0]: AI.AGGRESSIVE,
+        [1]: AI.STANDARD,
+        [2]: AI.CONSERVATIVE,
+        [3]: AI.MIKE
+      };
+      
+      return {
+        brain: brains[level],
+        level: level + 1
+      };
+    }
+
+    resetDecks( numDecks ) {
+        let decks = [];
+
+        for(let i=0; i<numDecks; i++) {
+            decks.push(new Deck({
+              effectiveDeckNumber: i
+            }).shuffle());
+        }
+
+        return decks;
     }
 
     shiftQueue() {
@@ -241,6 +241,31 @@ export default class Blackjack {
       } else if( dealerInitialScore >= 18 ) {
         this.state = PLAYER_STATE.STAND;
       }
+    }
+
+    payout() {
+      const houseScore = Blackjack.getHandValue(this.cards);
+
+      this.players.forEach(player => {
+        const playerScore = Blackjack.getHandValue(player.cards);
+
+        const houseBust = this.state === PLAYER_STATE.BUST;
+        const playerBust = player.state === PLAYER_STATE.BUST;
+
+        if( !houseBust ) {
+          if( !playerBust ) {
+            if( playerScore > houseScore ) {
+              player.monies += player.bet * 2;
+              this.monies -= player.bet;
+            }
+          }
+        } else {
+          if( !playerBust ) {
+            player.monies += player.bet + (player.bet * 1.5);
+            this.monies -= player.bet * 1.5;
+          }
+        }
+      });
     }
 }
 
