@@ -3,6 +3,9 @@
     <h1 class="width-100 center game-title">
       Blackjack
     </h1>
+    <div>
+      Counting Practice
+    </div>
     <br><br>
     <div class="width-100">
       <cv-button @click="play()" kind="secondary" class="width-100">
@@ -12,6 +15,11 @@
       <br>
       <cv-button @click="options()" kind="secondary" class="width-100">
         Options
+      </cv-button>
+      <br>
+      <br>
+      <cv-button @click="about()" kind="secondary" class="width-100">
+        About
       </cv-button>
     </div>
  </div>
@@ -26,6 +34,9 @@ export default {
     },
     options() {
       this.$router.push('/options');
+    },
+    about() {
+      this.$router.push('/about');
     }
   }
 };
