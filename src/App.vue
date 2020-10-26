@@ -65,4 +65,13 @@ html, body, #app {
 .bx--toast-notification__close-button {
   display: none !important;
 }
+
+.bx--data-table th {
+  text-align: center !important;
+  font-size: 0.8em;
+}
+
+.bx--data-table-container {
+  padding-top: 0px !important;
+}
 </style>

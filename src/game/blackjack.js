@@ -1,4 +1,4 @@
-import Deck from './deck';
+import Deck, { SUIT, DESIGNATOR } from './deck';
 
 const randRange = (min, max) => {
   min = Math.ceil(min);
@@ -38,6 +38,7 @@ export default class Blackjack {
     score = 0;
     state = PLAYER_STATE.ACTIVE;
     cards = [];
+    deckChart = {};
 
     constructor(options) {
         let names = [
@@ -93,6 +94,8 @@ export default class Blackjack {
         this.decks.forEach(deck => {
             this.queue = this.queue.concat(deck.cards);
         });
+
+        this.resetDeckChart();
     }
 
     static getCardValue(card) {
@@ -115,9 +118,11 @@ export default class Blackjack {
         return acc + Blackjack.getCardValue(card);
       }, 0);
 
-      const hasAce = cards.find(c => c.designator.name === 'A');
-      if( score > 21 && hasAce ) {
+      const hasAces = cards.filter(c => c.designator.name === 'A');
+      let numAces = hasAces.length;
+      while( score > 21 && numAces > 0 ) {
         score -= 10;
+        numAces -= 1;
       }
 
       return score;
@@ -152,6 +157,7 @@ export default class Blackjack {
 
     shiftQueue() {
       const card = this.queue.shift();
+      this.updateDeckChart(card);
 
       if( this.queue.length > 0 && this.queue.length % 52 === 0 ) {
         /*
@@ -162,9 +168,58 @@ export default class Blackjack {
         topDeck.shuffle();
 
         this.queue = this.queue.concat(topDeck.cards);
+
+        this.resetDeckChart();
       }
 
       return card;
+    }
+
+    resetDeckChart() {
+      this.deckChart = {};
+
+      const count = Object.keys(SUIT).length;
+      Object.keys(DESIGNATOR).filter(k => k !== DESIGNATOR.NONE.name).forEach(key => {
+        this.deckChart[DESIGNATOR[key].name] = count;
+      });
+    }
+
+    updateDeckChart( card ) {
+      this.deckChart[card.designator.name]--;
+    }
+
+    getDeckChartData() {
+      const deckChartData = Object.keys(this.deckChart).map(d => {
+        return {
+          group: d,
+          value: this.deckChart[d]
+        };
+      });
+
+      return deckChartData;
+    }
+
+    getChanceToBust( playerIndex ) {
+      const currentScore = Blackjack.getHandValue(this.players[playerIndex].cards );
+
+      const minBust = 22 - currentScore;
+
+      if( minBust > 10 ) return 0;
+
+      const totalCardsLeftInDeck = this.queue.length % 52;
+
+      let numDangerousCards = 0;
+      for(let i=0; i<totalCardsLeftInDeck; i++) {
+        const card = this.queue[i];
+        const value = Blackjack.getCardValue(card);
+
+        if( value > minBust ) {
+          numDangerousCards++;
+        }
+      }
+
+      const chance = (numDangerousCards / totalCardsLeftInDeck) * 100;
+      return Math.round((chance + Number.EPSILON) * 100) / 100;
     }
 
     collectDiscards() {

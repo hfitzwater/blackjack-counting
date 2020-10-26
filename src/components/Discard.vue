@@ -1,28 +1,51 @@
 <template>
   <div class="discard" v-if="showCount">
     <div>
-      <div class="width-100 center" style="padding: 0.5em 0;">
-        <div style="padding: 0.5em 0;">
-          <strong>
-            Running Count
-          </strong>
+      <div class="width-100" style="margin-bottom: 2em;">
+        <cv-data-table :columns="['Running Count']">
+          <template slot="data">
+            <cv-data-table-row>
+              <cv-data-table-cell>
+                <span :class="{ red: Counter.countCards(getExposedCards(), countStrat) < 0 }">
+                  {{ Counter.countCards(getExposedCards(), countStrat) }}
+                </span>
+              </cv-data-table-cell>
+            </cv-data-table-row>
+          </template>
+        </cv-data-table>
+
+        <cv-data-table :columns="['Bust Chance']">
+          <template slot="data">
+            <cv-data-table-row>
+              <cv-data-table-cell>
+                <span :class="{ red: chanceToBust >= 50 }">
+                  {{ chanceToBust }}%
+                </span>
+              </cv-data-table-cell>
+            </cv-data-table-row>
+          </template>
+        </cv-data-table>
+
+        <div class="container theme--g100" style="margin-top: 2em;">
+          <ccv-simple-bar-chart :data='deckChartData' :options='options'></ccv-simple-bar-chart>
         </div>
-        <div>
-          {{ Counter.countCards(getExposedCards(), countStrat) }}
-        </div>
-      </div>
-      <div class="width-100 center" style="padding: 0.5em 0;">
-        <strong>
-          Discard
-        </strong>
-      </div>
-      <div>
-        <!-- (DeckNumber), [Total Cards] -->
-        ({{ Math.floor(blackjack.discard.length / 52) }}) [{{ blackjack.discard.length }}]
       </div>
     </div>
-    <div v-for="card of blackjack.discard" :key="getKeyForCard(card)">
-      <Card :cardDetails="card" />
+    <cv-data-table :columns="['Discarded']">
+      <template slot="data">
+        <cv-data-table-row>
+          <cv-data-table-cell>
+            <span style="color: #161616">
+              {{ blackjack.discard.length }}
+            </span>
+          </cv-data-table-cell>
+        </cv-data-table-row>
+      </template>
+    </cv-data-table>
+    <div style="margin-bottom: 3em; margin-top: 1.5em;">
+      <div v-for="card of blackjack.discard" :key="getKeyForCard(card)">
+        <Card :cardDetails="card" />
+      </div>
     </div>
   </div>
 </template>
@@ -39,7 +62,28 @@ export default {
   data() {
     return {
       Counter,
-      countStrat: this.$store.state.options.countStrat
+      deckDataColumns: [
+        "Bust Chance",
+        "Running Count",
+        "Discarded"
+      ],
+      countStrat: this.$store.state.options.countStrat,
+      options: {
+          "axes": {
+              "bottom": {
+                  "mapsTo": "value",
+                  "scaleType": "linear"
+              },
+              "left": {
+                  "mapsTo": "group",
+                  "scaleType": "labels"
+              }
+          },
+          "legend": {
+            "enabled": false
+          },
+          "height": "350px"
+      }
     };
   },
   methods: {
@@ -55,6 +99,14 @@ export default {
   computed: {
     blackjack() {
       return this.$store.state.blackjack.blackjack;
+
+    },
+    deckChartData() {
+      return this.blackjack.getDeckChartData();
+    },
+    chanceToBust() {
+      const chance = this.blackjack.getChanceToBust(0);
+      return chance;
     },
     showCount() {
       return this.$store.state.options.showCount;
@@ -73,6 +125,16 @@ export default {
     flex: 1 1 auto;
     border-right: 2px solid rgb(18, 18, 18);
     border-left: 2px solid rgb(18, 18, 18);
-    background-color: rgba(45,25,5,0.6);
+    background-color: white;
+  }
+
+  td {
+    span.red {
+      color: #b10101
+    }
+
+    text-align: center;
+    color: green;
+    font-weight: bold;
   }
 </style>
