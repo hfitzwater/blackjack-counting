@@ -26,7 +26,8 @@
           </template>
         </cv-data-table>
 
-        <div class="container theme--g100" style="margin-top: 2em;">
+        <div class="container theme--g100" style="margin: 2em 0.5em 0em 0.5em;">
+          <!-- <ccv-pie-chart :data='deckChartData' :options='options'></ccv-pie-chart> -->
           <ccv-simple-bar-chart :data='deckChartData' :options='options'></ccv-simple-bar-chart>
         </div>
       </div>
@@ -80,9 +81,12 @@ export default {
               }
           },
           "legend": {
-            "enabled": false
+            "position": "top",
+            "alignment": "center",
+            "order": ['1','2','3','4','5','6','7','8','9','10'],
+            "enabled": true
           },
-          "height": "350px"
+          "height": "250px"
       }
     };
   },

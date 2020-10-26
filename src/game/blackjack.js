@@ -1,4 +1,4 @@
-import Deck, { SUIT, DESIGNATOR } from './deck';
+import Deck, { DESIGNATOR } from './deck';
 
 const randRange = (min, max) => {
   min = Math.ceil(min);
@@ -95,14 +95,14 @@ export default class Blackjack {
             this.queue = this.queue.concat(deck.cards);
         });
 
-        this.resetDeckChart();
+        this.deckChart = this.resetDeckChart();
     }
 
     static getCardValue(card) {
-      const isJack = card.designator.name === "J";
-      const isQueen = card.designator.name === "Q";
-      const isKing = card.designator.name === "K";
-      const isAce = card.designator.name === "A";
+      const isJack = card.designator === DESIGNATOR.JACK;
+      const isQueen = card.designator === DESIGNATOR.QUEEN;
+      const isKing = card.designator === DESIGNATOR.KING;
+      const isAce = card.designator === DESIGNATOR.ACE;
 
       if( isJack || isQueen || isKing ) {
         return 10;
@@ -113,16 +113,18 @@ export default class Blackjack {
       return Number(card.designator.name);
     }
 
-    static getHandValue(cards) {
+    static getHandValue(cards, raw=false) {
       let score = cards.reduce((acc, card) => {
         return acc + Blackjack.getCardValue(card);
       }, 0);
 
-      const hasAces = cards.filter(c => c.designator.name === 'A');
-      let numAces = hasAces.length;
-      while( score > 21 && numAces > 0 ) {
-        score -= 10;
-        numAces -= 1;
+      if( !raw ) {
+        const hasAces = cards.filter(c => c.designator === DESIGNATOR.ACE);
+        let numAces = hasAces.length;
+        while( score > 21 && numAces > 0 ) {
+          score -= 10;
+          numAces -= 1;
+        }
       }
 
       return score;
@@ -169,30 +171,50 @@ export default class Blackjack {
 
         this.queue = this.queue.concat(topDeck.cards);
 
-        this.resetDeckChart();
+        this.deckChart = this.resetDeckChart();
       }
 
       return card;
     }
 
     resetDeckChart() {
-      this.deckChart = {};
+      let deckChart = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 0,
+        8: 0,
+        9: 0,
+        10: 0
+      };
 
-      const count = Object.keys(SUIT).length;
-      Object.keys(DESIGNATOR).filter(k => k !== DESIGNATOR.NONE.name).forEach(key => {
-        this.deckChart[DESIGNATOR[key].name] = count;
+      const fakeDeck = new Deck();
+      fakeDeck.cards.forEach(card => {
+        let cardValue = Blackjack.getCardValue(card);
+
+        if(cardValue === 11) cardValue = 1;
+
+        deckChart[cardValue]++;
       });
+
+      return deckChart;
     }
 
     updateDeckChart( card ) {
-      this.deckChart[card.designator.name]--;
+      let val = Blackjack.getCardValue(card);
+      if( val === 11 ) val = 1;
+
+      this.deckChart[val]--;
     }
 
     getDeckChartData() {
-      const deckChartData = Object.keys(this.deckChart).map(d => {
+      const deckChartData = Object.keys(this.deckChart).map(value => {
         return {
-          group: d,
-          value: this.deckChart[d]
+          group: value,
+          value: Number(this.deckChart[value])
         };
       });
 
@@ -200,7 +222,8 @@ export default class Blackjack {
     }
 
     getChanceToBust( playerIndex ) {
-      const currentScore = Blackjack.getHandValue(this.players[playerIndex].cards );
+      const numAces = this.players[playerIndex].cards.filter(c => c.designator === DESIGNATOR.ACE).length;
+      const currentScore = Blackjack.getHandValue(this.players[playerIndex].cards, true) - 10*numAces;
 
       const minBust = 22 - currentScore;
 
